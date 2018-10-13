@@ -1,0 +1,28 @@
+plugins {
+    id 'application'
+//    id 'java'
+}
+
+mainClassName = "org.Main"
+
+group 'io-apps'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 11
+
+sourceCompatibility = 11
+
+repositories {
+    maven { url "https://localhost/repository/maven-public" }
+    //  maven { url "https://localhost/repository/oss-sonatype-snapshots" }
+}
+
+
+dependencies {
+
+    compile group: 'org.jetbrains.pty4j', name: 'pty4j', version: '0.8.4'
+
+//    compile "com.github.purejavacomm:purejavacomm:1.0.1.RELEASE"org
+
+}
+
