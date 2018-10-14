@@ -24,5 +24,10 @@ dependencies {
 
 //    compile "com.github.purejavacomm:purejavacomm:1.0.1.RELEASE"org
 
+    compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.2.2'
+
+    compile 'ch.qos.logback:logback-classic:1.1.7'
+    compile 'org.slf4j:slf4j-api:1.7.21'
+
 }
 
