@@ -71,7 +71,7 @@ public class Main {
 //                .subscribe(log::info);
 
         // The command to run in a PTY...
-        String[] cmd = {"/usr/bin/python"};
+        String[] cmd = {"/bin/sh"};
         Map<String, String> env1 = new HashMap<>();
 
         env1.put("TERM", "xterm");
@@ -92,8 +92,7 @@ public class Main {
                 OutputStream os = pty.getOutputStream();
                 try {
 //                    os.write("ls -a\n".getBytes());
-                    // os.write("md5sum /home/a/appslnx/build-tools/nexus-3.13.0-01-unix/nexus-3.13.0-01/bin/nexus.rc | awk '{print $1}' \n".getBytes());
-                    os.write("print('eueuoueou') \n".getBytes());
+                    os.write("md5sum /home/a/appslnx/build-tools/nexus-3.13.0-01-unix/nexus-3.13.0-01/bin/nexus.rc | awk '{print $1}' \n".getBytes());
                     os.flush();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -121,7 +120,7 @@ public class Main {
                     }
 
                     System.out.println("*************");
-                    System.out.println(new String(r));
+                    System.out.println(new String(r).split("\n")[1].substring(2));
                 }, () -> {
 
                 });
