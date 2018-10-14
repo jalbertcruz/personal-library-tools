@@ -20,19 +20,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class Main {
 
-    private static final Logger log = LoggerFactory.getLogger(Main.class);
-
-    static Observable<String> risky() {
-        return Observable.fromCallable(() -> {
-            if (Math.random() < 0.1) {
-                Thread.sleep((long) (Math.random() * 2000));
-                return "OK";
-            } else {
-                throw new RuntimeException("Transient");
-            }
-        });
-    }
-
     // Asynchronously check whether the output of the process is captured
     // properly...
     static Observable<Byte> sha(PtyProcess pty, List<Byte> l, Runnable b) {
