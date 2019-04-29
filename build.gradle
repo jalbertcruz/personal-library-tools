@@ -1,5 +1,6 @@
 plugins {
     id 'application'
+    id "org.sonarqube" version "2.7"
 //    id 'java'
 }
 
@@ -13,12 +14,20 @@ sourceCompatibility = 11
 sourceCompatibility = 11
 
 repositories {
-    maven { url "https://localhost/repository/maven-public" }
+    maven { 
+        url "https://localhost/repository/maven-public" 
+    }
+    maven { 
+        url "https://localhost/repository/maven2-public" 
+    }
     //  maven { url "https://localhost/repository/oss-sonatype-snapshots" }
 }
 
 
 dependencies {
+
+    // https://github.com/zeroturnaround/zt-exec
+    compile group: 'org.zeroturnaround', name: 'zt-exec', version: '1.10'
 
     compile group: 'org.jetbrains.pty4j', name: 'pty4j', version: '0.8.4'
 

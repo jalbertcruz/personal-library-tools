@@ -1,175 +1,157 @@
 package org;
 
 
-import com.pty4j.PtyProcess;
-import io.reactivex.Observable;
-import io.reactivex.disposables.Disposable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
+import java.util.HashSet;
+import java.util.stream.Stream;
 
 public class Main {
 
-    // Asynchronously check whether the output of the process is captured
-    // properly...
-    static Observable<Byte> sha(PtyProcess pty, List<Byte> l, Runnable b) {
-        return Observable.create(
-                subscriber -> {
-                    var tout = Observable.create(
-                            subs -> {
-                               // subs.onNext((byte) 3);
-                            })
-                            .timeout(7, SECONDS);
+//    public static final String BOOKS_NAMES = "/home/a/src/a/dev-speech-analytics/devOps/books_names.py";
+    public static final String BOOKS_NAMES = "./books_names.py";
+    public static final String BOOKS_LOCATIONS = "./books_locations.py";
+//    public static final String BOOKS_LOCATIONS = "/home/a/src/a/dev-speech-analytics/devOps/books_locations.py";
 
-                    Disposable disposable = tout.subscribe(e -> {
-                    }, e -> {
-                        subscriber.onComplete();
-                        b.run();
-                    }, () -> {
-                    });
-                    //tout.subscribe();
+    private static Tuple2<String, String> obtenerFirma(File file) {
 
-                    InputStream is1 = pty.getInputStream();
-                    try {
-                        int ch;
-                        while (pty.isRunning() && (ch = is1.read()) >= 0) {
+        Tuple2<String, String> res = new Tuple2<>();
+        try {
+//            MessageDigest messageDigest = MessageDigest.getInstance("MD5"); // Inicializa MD5
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-512"); // Inicializa MD5
+            MessageDigest messageDigest2 = MessageDigest.getInstance("SHA"); // Inicializa SHA-1
 
-//                           System.out.println((char) ch);
-//                            System.out.flush();
-                            l.add((byte) ch);
+            try {
+                try (InputStream archivo = new FileInputStream(file)) {
+                    byte[] buffer = new byte[1024];
+                    int fin_archivo = -1;
+                    int caracter;
+                    //                    messageDigest2.update(buffer, 0, caracter);
+                    caracter = archivo.read(buffer);
 
-                            if (ch == 36) {
-
-                                disposable = tout.subscribe(
-                                        e -> {
-                                }, e -> {
-
-                                    subscriber.onComplete();
-                                    b.run();
-
-                                }, () -> {
-                                });
-
-                            } else {
-                                if (ch != 32 // despues del '$' sh pone un ' '
-                                        && disposable != null) {
-                                    disposable.dispose();
-                                    disposable = null;
-                                }
-
-
-                            }
-
-                            subscriber.onNext((byte) ch);
-
-
-                        }
-
-                        subscriber.onComplete();
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    while (caracter != fin_archivo) {
+                        //                    c+= 1;
+                        //                    System.out.println("Analisis del Mb número: " + c + " del fichero " + file.getName());
+                        messageDigest.update(buffer); // Pasa texto claro a la función resumen
+                        messageDigest2.update(buffer);
+                        //                    messageDigest.update(buffer, 0, caracter); // Pasa texto claro a la función resumen
+                        //                    messageDigest2.update(buffer, 0, caracter);
+                        caracter = archivo.read(buffer);
                     }
+                }
+                byte[] resumen = messageDigest.digest(); // Genera el resumen MD5
+                byte[] resumen2 = messageDigest2.digest(); // Genera el resumen SHA-1
 
-                });
+                //Pasar los resumenes a hexadecimal
+
+                String s = "";
+                for (int i = 0; i < resumen.length; i++) {
+                    s += Integer.toHexString((resumen[i] >> 4) & 0xf);
+                    s += Integer.toHexString(resumen[i] & 0xf);
+                }
+
+                //System.out.println("Resumen MD5: " + s);
+                res.setA(s);
+
+                String m = "";
+                for (int i = 0; i < resumen2.length; i++) {
+                    m += Integer.toHexString((resumen2[i] >> 4) & 0xf);
+                    m += Integer.toHexString(resumen2[i] & 0xf);
+                }
+
+                res.setB(m);
+                //System.out.println("Resumen SHA-1: " + m);
+
+            } catch (java.io.FileNotFoundException fnfe) {
+            } catch (java.io.IOException ioe) {
+            }
+
+        } catch (java.security.NoSuchAlgorithmException nsae) {
+        }
+
+        return res;
     }
 
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws Exception, InterruptedException {
+        var ends = new HashSet<>();
+        var dirs = new ArrayList<>();
+        ends.add(".epub");
+        ends.add(".pdf");
+        ends.add(".mobi");
+        ends.add(".azw3");
+        ends.add(".djvu");
+        ends.add(".ps");
+        ends.add(".chm");
+        ends.add(".doc");
+        ends.add(".rar");
+        ends.add(".rtf");
 
-//        System.out.println(" ".getBytes()[0]);
-
-//        risky()
-//                .timeout(1, SECONDS)
-//                .doOnError(th -> log.warn("Will retry", th))
-//                .retry()
-//                .subscribe(log::info);
-
-        // The command to run in a PTY...
-        String[] cmd = {"/bin/sh", "-i"};
-        Map<String, String> env1 = new HashMap<>();
-
-        env1.put("TERM", "xterm");
-
-        PtyProcess pty = PtyProcess.exec(cmd, env1);
-
-        // OutputStream os = pty.getOutputStream();
-        // InputStream is = pty.getInputStream();
-
-        // static void main(String[] args) throws Exception {
-        final CountDownLatch latch = new CountDownLatch(1);
+        var get_sign = false;
+//        var get_sign = true;
 
 
-        // Asynchronously wait for a little while, then close the Pty, which should
-        // force our child process to be terminated...
-        Thread t2 = new Thread() {
-            public void run() {
-                OutputStream os = pty.getOutputStream();
-                try {
-//                    os.write("ls -a\n".getBytes());
-                    os.write(("" +
-                            "md5sum /home/a/Desktop/temp/politics/a.sh | awk '{print $1}'\n").getBytes());
-                    //os.flush();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        t2.start();
+
+        var f = Files.walk(Path.of(
+//                 "/media/a/data/docs/Events/MATECOMPU 2009/fscommand/"
+                 "/media/a/data/docs/"
+//                "/home/a/Downloads/aa/aa/"
+        ))
+                .filter(
+                        (Path e) -> (e.toFile().isFile()
+                                && ends.stream().anyMatch(
+                                (Object p) ->
+                                        e.getFileName()
+                                                .toString().toLowerCase()
+                                                .endsWith((String) p)))
+                );
+
+                /*.map(e -> {
+                    //System.out.println(e.getFileName().toString());
+                    return e;
+                });*/
 
 
-        var ch = new ArrayList<Byte>();
+        Stream<String> ts = f.map(e -> {
 
-        sha(pty, ch, () -> {
-            byte[] r = new byte[ch.size()];
-            for (int i = 0; i < ch.size(); i++) {
-                r[i] = ch.get(i);
+            var firma = get_sign ? obtenerFirma(e.toFile()).a : "";
+
+            var d = e.getParent().toAbsolutePath().toString();
+            if (!dirs.contains(d)) {
+                dirs.add(d);
+                //     System.out.println(d);
             }
 
-            System.out.println("*************");
-            System.out.println(new String(r));
-        })
-//                .buffer(200)
+            return String.format("%s|%s|%s|%d\n", e.toFile().getName().toLowerCase(), e.toFile().getName(), firma, dirs.indexOf(d));
+        });
 
-//                .skip(2)
-//                .doOnError((Throwable th) -> {
-//
-//                })
-                .subscribe(e -> {
+        OutputStreamWriter os = new FileWriter(BOOKS_NAMES);
 
-                }, e -> {
+        os.write("names = \"\"\"\n");
+        ts.forEach(e -> {
+            try {
+                os.write(e);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            // System.out.println(e);
+        });
+        os.write("\"\"\"\n");
+        os.close();
 
-                }, () -> {
+        OutputStreamWriter pydirs = new FileWriter(BOOKS_LOCATIONS);
 
-                });
+        pydirs.write("dirs = {\n");
 
-//                .subscribe((List<Byte> ch) -> {
-//                    byte[] r = new byte[ch.size()];
-//                    for (int i = 0; i < ch.size(); i++) {
-//                        r[i] = ch.get(i);
-//                    }
-//
-//                    System.out.println("*************");
-//                    System.out.println(new String(r));
-//                });
+        for (int i = 0; i < dirs.size(); i++) {
+            pydirs.write(" " + i + ": " + "\"" + dirs.get(i) + "/\",\n");
+        }
 
-        latch.await(10, SECONDS);
-        // We should've waited long enough to have read some of the input...
+        pydirs.write("}\n");
+        pydirs.close();
 
-        int result = pty.waitFor();
-
-        t2.join();
-
-        System.out.println(-1 == result);
     }
 }
