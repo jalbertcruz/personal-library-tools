@@ -11,8 +11,6 @@ version '1.0-SNAPSHOT'
 
 sourceCompatibility = 11
 
-sourceCompatibility = 11
-
 repositories {
     maven { 
         url "https://localhost/repository/maven-public" 

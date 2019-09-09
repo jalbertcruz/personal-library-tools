@@ -12,8 +12,13 @@ import java.util.stream.Stream;
 public class Main {
 
 //    public static final String BOOKS_NAMES = "/home/a/src/a/dev-speech-analytics/devOps/books_names.py";
+//    public static final String BOOKS_NAMES = "./medias_names.py";
+//    public static final String BOOKS_LOCATIONS = "./medias_locations.py";
+
     public static final String BOOKS_NAMES = "./books_names.py";
     public static final String BOOKS_LOCATIONS = "./books_locations.py";
+
+
 //    public static final String BOOKS_LOCATIONS = "/home/a/src/a/dev-speech-analytics/devOps/books_locations.py";
 
     private static Tuple2<String, String> obtenerFirma(File file) {
@@ -98,15 +103,19 @@ public class Main {
         var f = Files.walk(Path.of(
 //                 "/media/a/data/docs/Events/MATECOMPU 2009/fscommand/"
                  "/media/a/data/docs/"
+//                 "/media/a/Medias/Medias/"
 //                "/home/a/Downloads/aa/aa/"
         ))
                 .filter(
                         (Path e) -> (e.toFile().isFile()
+
                                 && ends.stream().anyMatch(
                                 (Object p) ->
                                         e.getFileName()
                                                 .toString().toLowerCase()
-                                                .endsWith((String) p)))
+                                                .endsWith((String) p))
+
+                        )
                 );
 
                 /*.map(e -> {
