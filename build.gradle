@@ -5,6 +5,7 @@ plugins {
 }
 
 mainClassName = "org.Main"
+//mainClassName = "org.MainJwt"
 
 group 'io-apps'
 version '1.0-SNAPSHOT'
@@ -25,16 +26,20 @@ repositories {
 dependencies {
 
     // https://github.com/zeroturnaround/zt-exec
-    compile group: 'org.zeroturnaround', name: 'zt-exec', version: '1.10'
+    implementation group: 'org.zeroturnaround', name: 'zt-exec', version: '1.10'
 
-    compile group: 'org.jetbrains.pty4j', name: 'pty4j', version: '0.8.4'
+    implementation group: 'org.jetbrains.pty4j', name: 'pty4j', version: '0.9.6'
 
 //    compile "com.github.purejavacomm:purejavacomm:1.0.1.RELEASE"org
 
-    compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.2.2'
+    implementation group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.2.2'
 
-    compile 'ch.qos.logback:logback-classic:1.1.7'
-    compile 'org.slf4j:slf4j-api:1.7.21'
+    implementation 'ch.qos.logback:logback-classic:1.1.7'
+    implementation 'org.slf4j:slf4j-api:1.7.21'
+
+    // https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt
+//    compile group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '7.8'
+
 
 }
 
